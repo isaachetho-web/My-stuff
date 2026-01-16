@@ -1,34 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>GC - Universal Fallback</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js" crossorigin="anonymous"></script>
-    <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        #game { width: 100vw; height: 100vh; display: none; }
-        #status-ui { text-align: center; border: 2px solid #0f0; padding: 40px; background: #050505; max-width: 400px; }
-        .log { font-size: 10px; color: #666; text-align: left; margin-top: 10px; border-top: 1px solid #222; padding-top: 10px; }
-    </style>
-</head>
-<body>
-    <div id="status-ui">
-        <h2>SYSTEM BOOT</h2>
-        <p id="msg">SELECT ISO (657MB)</p>
-        <div id="log" class="log">Ready...</div>
-        <input type="file" id="iso" style="display:none">
-        <button onclick="document.getElementById('iso').click()" style="background:#0f0; color:#000; border:none; padding:10px 20px; font-weight:bold; cursor:pointer; margin-top:10px;">BROWSE FILES</button>
-    </div>
-    <div id="game"></div>
-
-    <script>
-        // All known possible CDN paths for GameCube cores in 2026
+// Updated mirrors specifically for the 'Dolphin' core name
         const mirrors = [
-            "https://cdn.emulatorjs.org/latest/data/",
+            "https://cdn.emulatorjs.org/nightly/data/",
             "https://rawcdn.githack.com/EmulatorJS/EmulatorJS/main/data/",
-            "https://unpkg.com/emulatorjs@latest/data/",
             "https://cdn.jsdelivr.net/gh/linuxguist/emulatorjs@main/data/",
-            "https://cdn.emulatorjs.org/nightly/data/"
+            "https://webretro.github.io/ac/"
         ];
 
         let currentMirrorIndex = 0;
@@ -43,11 +18,14 @@
 
         function startMirrorCycle(file) {
             const path = mirrors[currentMirrorIndex];
-            addLog("Attempting Mirror " + (currentMirrorIndex + 1) + ": " + path.split('/')[2]);
+            addLog("Searching Mirror: " + path.split('/')[2]);
 
-            // Set global variables for the emulator
             window.EJS_player = '#game';
-            window.EJS_core = 'gc';
+            
+            // THE CRITICAL CHANGE: Changing 'gc' to 'dolphin'
+            // This forces the loader to look for dolphin_libretro.wasm
+            window.EJS_core = 'dolphin'; 
+            
             window.EJS_gameUrl = URL.createObjectURL(file);
             window.EJS_pathtodata = path;
             window.EJS_startOnLoaded = true;
@@ -57,19 +35,20 @@
             loader.id = "emu-loader";
             
             loader.onload = () => {
-                addLog("Loader.js: [SUCCESS]");
-                document.getElementById('status-ui').style.display = 'none';
+                addLog("Engine Handshake: [SUCCESS]");
+                setTimeout(() => { document.getElementById('status-ui').style.display = 'none'; }, 2000);
             };
 
             loader.onerror = () => {
-                addLog("Loader.js: [404 NOT FOUND]");
-                document.getElementById('emu-loader').remove();
+                addLog("Path 404: Trying next mirror...");
+                const oldLoader = document.getElementById('emu-loader');
+                if(oldLoader) oldLoader.remove();
+                
                 currentMirrorIndex++;
                 if (currentMirrorIndex < mirrors.length) {
                     startMirrorCycle(file);
                 } else {
-                    document.getElementById('msg').innerHTML = "<span style='color:red'>ALL MIRRORS FAILED</span>";
-                    addLog("CRITICAL: No valid core providers found.");
+                    addLog("CRITICAL: Dolphin core not found on any mirror.");
                 }
             };
 
@@ -81,6 +60,3 @@
             logDiv.innerHTML += "<br>> " + txt;
             console.log(txt);
         }
-    </script>
-</body>
-</html>
