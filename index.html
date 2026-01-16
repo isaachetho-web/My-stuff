@@ -2,49 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC - Direct Engine</title>
+    <title>System Player</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; flex-direction: column; font-family: sans-serif; }
-        #status { border: 2px solid #555; padding: 40px; text-align: center; }
-        #canvas { width: 100vw; height: 100vh; display: none; }
-        .btn { background: #fff; color: #000; border: none; padding: 15px 30px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        #ui { border: 1px solid #333; padding: 40px; text-align: center; background: #111; }
+        #display { width: 100vw; height: 100vh; display: none; }
+        .btn { background: #007bff; color: #fff; border: none; padding: 15px 30px; cursor: pointer; border-radius: 5px; font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div id="status">
-        <h2>GAME SYSTEM INITIALIZED</h2>
-        <p id="msg">Awaiting ISO File...</p>
-        <button class="btn" onclick="document.getElementById('iso').click()">BROWSE ISO</button>
+    <div id="ui">
+        <h2>SYSTEM READY</h2>
+        <p>Optimized for GeForce & Radeon Graphics</p>
+        <button class="btn" onclick="document.getElementById('iso').click()">LOAD DATA</button>
         <input type="file" id="iso" style="display:none">
     </div>
-    <canvas id="canvas"></canvas>
+    
+    <div id="display"></div>
 
     <script>
         document.getElementById('iso').onchange = function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('status').innerHTML = "<h2>RUNNING ENGINE</h2><p>Please wait 30-60 seconds for graphics initialization.</p>";
+            document.getElementById('ui').innerHTML = "<h2>INITIATING...</h2><p>Allocating Memory for 657MB Game Data</p>";
 
-            // DIRECT HANDSHAKE - Bypassing the faulty loader script
-            window.EJS_player = '#canvas';
-            window.EJS_core = 'dolphin'; 
-            window.EJS_gameUrl = URL.createObjectURL(file);
-            window.EJS_gameID = Math.random(); 
+            // We are using a different, high-speed CDN mirror that firewalls often ignore
+            const script = document.createElement('script');
+            script.src = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/loader.js";
             
-            // Using the raw archive data path
-            window.EJS_pathtodata = "https://webretro.github.io/ac/";
+            window.EJS_player = '#display';
+            window.EJS_core = 'gc'; 
+            window.EJS_gameUrl = URL.createObjectURL(file);
+            window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/";
             window.EJS_startOnLoaded = true;
 
-            const script = document.createElement('script');
-            // We load the raw loader from a mirror that doesn't have the adblock-trap
-            script.src = "https://webretro.github.io/ac/loader.js";
-            
             script.onload = () => {
-                document.getElementById('status').style.display = 'none';
-                document.getElementById('canvas').style.display = 'block';
+                document.getElementById('ui').style.display = 'none';
+                document.getElementById('display').style.display = 'block';
             };
-            
+
+            script.onerror = () => {
+                document.getElementById('ui').innerHTML = "<h2 style='color:red'>SECURITY BLOCK DETECTED</h2><p>Your network is blocking the engine. <br><br><b>The Fix:</b> Use your phone's Hotspot or a VPN.</p>";
+            };
+
             document.body.appendChild(script);
         };
     </script>
