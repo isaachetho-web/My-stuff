@@ -2,18 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC - Engine Bypass</title>
+    <title>GC - Engine Fix</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; }
         #game { width: 100vw; height: 100vh; display: none; }
-        #loading { text-align: center; border: 1px solid #0f0; padding: 20px; cursor: pointer; }
+        #loading { text-align: center; border: 1px solid #0f0; padding: 40px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div id="loading" onclick="document.getElementById('iso').click()">
-        <h2>CORE LOADED: SUCCESS</h2>
-        <p>Click to inject 657MB ISO</p>
-        <p style="color: #555; font-size: 10px;">(Language: Defaulting to EN)</p>
+        <h2>JOYSTICK LIBRARY LOADED</h2>
+        <p>Click to select your 657MB GameCube ISO</p>
         <input type="file" id="iso" style="display:none">
     </div>
     <div id="game"></div>
@@ -23,18 +23,15 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('loading').innerHTML = "<h2>MOUNTING ISO...</h2><p>Please wait (30-60s) while GPU allocates memory.</p>";
+            document.getElementById('loading').innerHTML = "<h2>BOOTING DOLPHIN CORE...</h2><p>Allocating RAM. Please wait 30s.</p>";
             document.getElementById('game').style.display = 'block';
 
             window.EJS_player = '#game';
             window.EJS_core = 'gc'; 
             window.EJS_gameUrl = URL.createObjectURL(file);
+            window.EJS_gameID = Date.now();
             
-            // Bypass the en-GB error by forcing en-US
-            window.EJS_language = 'en-US';
-            window.EJS_gameID = 123;
-            
-            // Stable CDN link using the jsDelivr bypass
+            // Using the official GitHub Mirror for the most stable experience
             window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/";
             window.EJS_startOnLoaded = true;
 
