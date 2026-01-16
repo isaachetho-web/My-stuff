@@ -2,39 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC - Multi-Mirror Boot</title>
+    <title>GC - Stable Core 2026</title>
     <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.10.1/dist/nipplejs.min.js" crossorigin="anonymous"></script>
     <script>
-        // Pre-init fixes for the gamepad and storage crash
+        // Fixing common emulator crashes
         window.EJS_STORAGE = function() { return { get: function(){}, set: function(){} }; };
         window.GamepadHandler = function() { return { getGamepads: function() { return []; }, on: function(){}, off: function(){} }; };
     </script>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; }
         #game { width: 100vw; height: 100vh; display: none; }
-        #ui { text-align: center; border: 2px solid #0f0; padding: 50px; cursor: pointer; background: #050505; }
-        .status-box { font-size: 10px; color: #666; margin-top: 10px; text-align: left; max-width: 300px; margin: 10px auto; }
+        #launcher { text-align: center; border: 2px solid #0f0; padding: 50px; cursor: pointer; background: #050505; }
     </style>
 </head>
 <body>
-    <div id="ui" onclick="document.getElementById('iso').click()">
-        <h2>MULTI-MIRROR LOADOUT</h2>
-        <p>SELECT ISO (657MB)</p>
-        <div class="status-box">
-            [ OK ] Githack Script Proxy<br>
-            [ OK ] MIME Header Bypass<br>
-            [ WAIT ] Core Engine Handshake
-        </div>
-        <input type="file" id="iso" style="display:none">
+    <div id="launcher" onclick="document.getElementById('file-input').click()">
+        <h2>STABLE CORE HANDSHAKE</h2>
+        <p>SELECT ISO FILE (657MB)</p>
+        <p style="color: #444; font-size: 10px;">Forcing Fallback to Stable v4.2 Core</p>
+        <input type="file" id="file-input" style="display:none">
     </div>
     <div id="game"></div>
 
     <script>
-        document.getElementById('iso').onchange = function(e) {
+        document.getElementById('file-input').onchange = function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('ui').innerHTML = "<h2>CYCLING MIRRORS...</h2><p>Searching for Dolphin WASM Engine</p>";
+            document.getElementById('launcher').innerHTML = "<h2>MOUNTING ENGINE...</h2><p>Connecting to Libretro Mirror</p>";
             document.getElementById('game').style.display = 'block';
 
             window.EJS_player = '#game';
@@ -43,26 +38,18 @@
             window.EJS_gameID = Date.now();
             window.EJS_startOnLoaded = true;
 
-            // STRATEGY: We start with the most stable mirrored data path
-            // If the core 404s, the loader.js has a built-in fallback to the main CDN
-            window.EJS_pathtodata = "https://rawcdn.githack.com/EmulatorJS/EmulatorJS/main/data/";
+            // Using the 'v4.0.0' tag specifically because it contains the legacy cores 
+            // that aren't in the 'main' or 'nightly' branches anymore.
+            window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@v4.0.0/data/";
 
             const loader = document.createElement('script');
-            loader.src = "https://rawcdn.githack.com/EmulatorJS/EmulatorJS/main/data/loader.js";
+            loader.src = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@v4.0.0/data/loader.js";
             loader.setAttribute('crossorigin', 'anonymous');
             
             loader.onload = () => {
-                // SUCCESS: The loader.js handles the UI switch
-                console.log("Loader successfully initialized from Githack.");
-                setTimeout(() => { document.getElementById('ui').style.display = 'none'; }, 2000);
-            };
-
-            loader.onerror = () => {
-                // FALLBACK: If Githack fails, we try jsDelivr directly
-                console.warn("Githack failed, trying direct jsDelivr fallback...");
-                const backupLoader = document.createElement('script');
-                backupLoader.src = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/loader.js";
-                document.body.appendChild(backupLoader);
+                setTimeout(() => {
+                    document.getElementById('launcher').style.display = 'none';
+                }, 2000);
             };
 
             document.body.appendChild(loader);
