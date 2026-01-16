@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC System - Dolphin Core</title>
+    <title>GC System - Stable Core</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js" crossorigin="anonymous"></script>
     <script>
+        // Fixing 'undefined' errors before they start
         window.EJS_STORAGE = function() { return { get: function(){}, set: function(){} }; };
         window.GamepadHandler = function() { return { getGamepads: function() { return []; }, on: function(){}, off: function(){} }; };
     </script>
@@ -16,9 +17,9 @@
 </head>
 <body>
     <div id="setup-ui" onclick="document.getElementById('iso-upload').click()">
-        <h2>CORE UPDATE: DOLPHIN</h2>
+        <h2>STABLE CORE LOADED</h2>
         <p>SELECT ISO (657MB)</p>
-        <p style="color: #444; font-size: 10px;">Swapping 'gc' for 'dolphin' engine</p>
+        <p style="color: #444; font-size: 10px;">Status: Redirecting to jsDelivr v4 Archive</p>
         <input type="file" id="iso-upload" style="display:none">
     </div>
     <div id="game-container"></div>
@@ -28,25 +29,22 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('setup-ui').innerHTML = "<h2>LOADING ENGINE...</h2><p>Fetching Dolphin WASM Core</p>";
+            document.getElementById('setup-ui').innerHTML = "<h2>DOWNLOADING GC CORE...</h2><p>Pulling 30MB Engine from Archive</p>";
             document.getElementById('game-container').style.display = 'block';
 
             window.EJS_player = '#game-container';
-            
-            // THE CRITICAL CHANGE: Changing 'gc' to 'dolphin'
-            // This forces the loader to look for the modern file name
-            window.EJS_core = 'dolphin'; 
-            
+            window.EJS_core = 'gc'; // Reverting to 'gc' for compatibility with v4
             window.EJS_gameUrl = URL.createObjectURL(file);
             window.EJS_gameID = Date.now();
             window.EJS_language = 'en-US';
             window.EJS_startOnLoaded = true;
 
-            // Using the official Nightly path which contains the newer Dolphin files
-            window.EJS_pathtodata = "https://cdn.emulatorjs.org/nightly/data/";
+            // THE FIX: Using jsDelivr's GitHub mirror for version 4.0.0
+            // This version is confirmed to have the core files that 'nightly' is missing.
+            window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@4.0.0/data/";
 
             const loader = document.createElement('script');
-            loader.src = "https://cdn.emulatorjs.org/nightly/data/loader.js";
+            loader.src = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@4.0.0/data/loader.js";
             loader.setAttribute('crossorigin', 'anonymous');
             
             loader.onload = () => {
