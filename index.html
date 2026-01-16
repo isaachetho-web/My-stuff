@@ -2,57 +2,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC High-Performance (WebRetro)</title>
+    <title>GC - Stealth Loader</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #00ff00; font-family: 'Courier New', monospace; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-        #status-box { border: 2px solid #00ff00; padding: 50px; text-align: center; background: #050505; box-shadow: 0 0 20px #004400; }
-        #canvas { width: 100vw; height: 100vh; display: none; position: fixed; top: 0; left: 0; }
-        .btn { background: #002200; border: 1px solid #00ff00; color: #00ff00; padding: 20px 40px; cursor: pointer; font-size: 20px; font-weight: bold; margin-top: 30px; }
-        .btn:hover { background: #00ff00; color: #000; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; font-family: sans-serif; }
+        #box { border: 1px solid #444; padding: 50px; text-align: center; }
+        #game { width: 100vw; height: 100vh; display: none; }
+        .btn { background: #333; color: #fff; border: 1px solid #fff; padding: 15px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div id="status-box">
-        <h1 style="letter-spacing: 5px;">SYSTEM: DOLPHIN</h1>
-        <p id="status-text">Status: STANDBY</p>
-        <button class="btn" onclick="document.getElementById('iso').click()">LOAD ISO FILE</button>
+    <div id="box">
+        <h2>GAMECUBE LOADER (STEALTH)</h2>
+        <p id="msg">Mirror A: Blocked. Mirror B: Attempting...</p>
+        <button class="btn" onclick="document.getElementById('iso').click()">SELECT ISO</button>
         <input type="file" id="iso" style="display:none">
-        <p style="font-size: 12px; color: #008800; margin-top: 20px;">Optimized for GeForce GTX 1050Ti & Radeon GPUs</p>
     </div>
-    
-    <canvas id="canvas"></canvas>
+    <div id="game"></div>
 
     <script>
         document.getElementById('iso').onchange = function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('status-text').innerText = "Status: DOWNLOADING CORE...";
-            document.querySelector('.btn').style.display = 'none';
+            document.getElementById('box').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
 
-            window.EJS_player = '#canvas';
-            window.EJS_core = 'dolphin'; // Specifically using the Dolphin engine name
+            window.EJS_player = '#game';
+            window.EJS_core = 'gc'; 
             window.EJS_gameUrl = URL.createObjectURL(file);
-            window.EJS_gameID = Date.now();
             
-            // WEBRETRO CDN: Much more stable for GitHub Pages
-            window.EJS_pathtodata = "https://webretro.github.io/ac/";
+            // We are using the "4.0.0" specific version archive. 
+            // This is hosted on a different part of the CDN that is rarely blocked.
+            window.EJS_pathtodata = "https://cdn.emulatorjs.org/4.0.0/data/";
             window.EJS_startOnLoaded = true;
 
             const loader = document.createElement('script');
-            loader.src = "https://webretro.github.io/ac/loader.js";
+            // Adding a timestamp to the URL to prevent "Cached" 404/Block errors
+            loader.src = "https://cdn.emulatorjs.org/4.0.0/data/loader.js?v=" + Date.now();
             
-            loader.onload = () => {
-                document.getElementById('status-box').style.display = 'none';
-                document.getElementById('canvas').style.display = 'block';
-                console.log("Core Handshake Successful");
+            loader.onerror = () => {
+                alert("CDN BLOCKED AGAIN. Please try this: Disable Ad-Block or open in Incognito (Ctrl+Shift+N).");
             };
 
-            loader.onerror = () => {
-                document.getElementById('status-text').innerText = "Status: MIRROR BLOCKED. CHECK CONSOLE.";
-                document.getElementById('status-text').style.color = "red";
-            };
-            
             document.body.appendChild(loader);
         };
     </script>
