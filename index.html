@@ -2,51 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>System Player</title>
+    <title>GC - Engine Bypass</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-        #ui { border: 1px solid #333; padding: 40px; text-align: center; background: #111; }
-        #display { width: 100vw; height: 100vh; display: none; }
-        .btn { background: #007bff; color: #fff; border: none; padding: 15px 30px; cursor: pointer; border-radius: 5px; font-weight: bold; margin-top: 20px; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; }
+        #game { width: 100vw; height: 100vh; display: none; }
+        #loading { text-align: center; border: 1px solid #0f0; padding: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div id="ui">
-        <h2>SYSTEM READY</h2>
-        <p>Optimized for GeForce & Radeon Graphics</p>
-        <button class="btn" onclick="document.getElementById('iso').click()">LOAD DATA</button>
+    <div id="loading" onclick="document.getElementById('iso').click()">
+        <h2>CORE LOADED: SUCCESS</h2>
+        <p>Click to inject 657MB ISO</p>
+        <p style="color: #555; font-size: 10px;">(Language: Defaulting to EN)</p>
         <input type="file" id="iso" style="display:none">
     </div>
-    
-    <div id="display"></div>
+    <div id="game"></div>
 
     <script>
         document.getElementById('iso').onchange = function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('ui').innerHTML = "<h2>INITIATING...</h2><p>Allocating Memory for 657MB Game Data</p>";
+            document.getElementById('loading').innerHTML = "<h2>MOUNTING ISO...</h2><p>Please wait (30-60s) while GPU allocates memory.</p>";
+            document.getElementById('game').style.display = 'block';
 
-            // We are using a different, high-speed CDN mirror that firewalls often ignore
-            const script = document.createElement('script');
-            script.src = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/loader.js";
-            
-            window.EJS_player = '#display';
+            window.EJS_player = '#game';
             window.EJS_core = 'gc'; 
             window.EJS_gameUrl = URL.createObjectURL(file);
+            
+            // Bypass the en-GB error by forcing en-US
+            window.EJS_language = 'en-US';
+            window.EJS_gameID = 123;
+            
+            // Stable CDN link using the jsDelivr bypass
             window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/";
             window.EJS_startOnLoaded = true;
 
-            script.onload = () => {
-                document.getElementById('ui').style.display = 'none';
-                document.getElementById('display').style.display = 'block';
+            const loader = document.createElement('script');
+            loader.src = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/loader.js";
+            
+            loader.onload = () => {
+                document.getElementById('loading').style.display = 'none';
             };
 
-            script.onerror = () => {
-                document.getElementById('ui').innerHTML = "<h2 style='color:red'>SECURITY BLOCK DETECTED</h2><p>Your network is blocking the engine. <br><br><b>The Fix:</b> Use your phone's Hotspot or a VPN.</p>";
-            };
-
-            document.body.appendChild(script);
+            document.body.appendChild(loader);
         };
     </script>
 </body>
