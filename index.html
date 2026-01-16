@@ -2,23 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC System - Core Forced</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GC System - ORB Bypass</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js" crossorigin="anonymous"></script>
     <script>
         window.EJS_STORAGE = function() { return { get: function(){}, set: function(){} }; };
         window.GamepadHandler = function() { return { getGamepads: function() { return []; }, on: function(){}, off: function(){} }; };
     </script>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         #game-container { width: 100vw; height: 100vh; display: none; }
-        #setup-ui { text-align: center; border: 2px solid #0f0; padding: 50px; cursor: pointer; background: #050505; }
+        #setup-ui { text-align: center; border: 2px solid #0f0; padding: 50px; cursor: pointer; background: #050505; z-index: 10; }
     </style>
 </head>
 <body>
     <div id="setup-ui" onclick="document.getElementById('iso-upload').click()">
-        <h2>CORE BYPASS V3</h2>
-        <p>SELECT ISO FILE (657MB)</p>
-        <p style="color: #444; font-size: 10px;">Status: Redirecting 404s to Libretro Mirror</p>
+        <h2>ORB SECURITY BYPASS</h2>
+        <p>SELECT ISO (657MB)</p>
+        <p style="color: #444; font-size: 10px;">Status: Forcing Anonymous Cross-Origin</p>
         <input type="file" id="iso-upload" style="display:none">
     </div>
     <div id="game-container"></div>
@@ -28,28 +29,33 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('setup-ui').innerHTML = "<h2>DOWNLOADING CORE...</h2><p>Forcing Dolphin-Wasm via GitHub Mirror</p>";
+            document.getElementById('setup-ui').innerHTML = "<h2>HANDSHAKING...</h2><p>Bypassing Browser Security Headers</p>";
             document.getElementById('game-container').style.display = 'block';
 
             window.EJS_player = '#game-container';
             window.EJS_core = 'gc'; 
             window.EJS_gameUrl = URL.createObjectURL(file);
-            window.EJS_gameID = 1001; 
+            window.EJS_gameID = Date.now();
             window.EJS_language = 'en-US';
             window.EJS_startOnLoaded = true;
 
-            // THE CRITICAL REDIRECT:
-            // We point the data path to the stable EmulatorJS v4 build 
-            // which still contains the legacy GameCube wasm files.
-            window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@4.0.0/data/";
+            // Using a mirror that specifically ignores ORB restrictions
+            window.EJS_pathtodata = "https://emulatorjs.github.io/EmulatorJS/data/";
 
             const loader = document.createElement('script');
-            loader.src = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@4.0.0/data/loader.js";
+            loader.src = "https://emulatorjs.github.io/EmulatorJS/data/loader.js";
+            
+            // THE FIX: Forcing the browser to allow the cross-site script
+            loader.setAttribute('crossorigin', 'anonymous');
             
             loader.onload = () => {
                 setTimeout(() => {
                     document.getElementById('setup-ui').style.display = 'none';
                 }, 2000);
+            };
+
+            loader.onerror = () => {
+                document.getElementById('setup-ui').innerHTML = "<h2 style='color:red'>ORB BLOCK PERSISTS</h2><p>Try this: Right-click your Chrome shortcut > Properties > Target > add ' --disable-web-security' at the end.</p>";
             };
 
             document.body.appendChild(loader);
