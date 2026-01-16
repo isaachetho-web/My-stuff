@@ -2,24 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC - Stable Mirror</title>
+    <title>GC System - Final Fix</title>
     <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.10.1/dist/nipplejs.min.js" crossorigin="anonymous"></script>
     <script>
-        // Global safety mocks
+        // Pre-startup fixes
         window.EJS_STORAGE = function() { return { get: function(){}, set: function(){} }; };
         window.GamepadHandler = function() { return { getGamepads: function() { return []; }, on: function(){}, off: function(){} }; };
     </script>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         #game { width: 100vw; height: 100vh; display: none; }
-        #ui { text-align: center; border: 2px solid #0f0; padding: 50px; cursor: pointer; }
+        #ui { text-align: center; border: 2px solid #0f0; padding: 50px; cursor: pointer; background: #050505; box-shadow: 0 0 15px #0f0; }
     </style>
 </head>
 <body>
     <div id="ui" onclick="document.getElementById('iso').click()">
-        <h2>MIRROR REDIRECT ACTIVE</h2>
+        <h2>CORE INJECTION: READY</h2>
         <p>SELECT ISO (657MB)</p>
-        <p style="color: #444; font-size: 10px;">Status: Using LinuxGuist Stable Core</p>
+        <p style="color: #444; font-size: 10px;">Bypassing MIME Type & 404 Errors</p>
         <input type="file" id="iso" style="display:none">
     </div>
     <div id="game"></div>
@@ -29,27 +29,32 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('ui').innerHTML = "<h2>FETCHING CORE...</h2><p>Pulling Dolphin Engine from stable mirror</p>";
+            document.getElementById('ui').innerHTML = "<h2>INITIATING...</h2><p>Streaming Core from Production Mirror</p>";
             document.getElementById('game').style.display = 'block';
 
             window.EJS_player = '#game';
-            window.EJS_core = 'gc'; // Reverting to 'gc' for this specific mirror
+            window.EJS_core = 'gc'; 
             window.EJS_gameUrl = URL.createObjectURL(file);
             window.EJS_gameID = Date.now();
             window.EJS_language = 'en-US';
             window.EJS_startOnLoaded = true;
 
-            // Using the jsDelivr proxy for the LinuxGuist repo (High Reliability)
-            window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/linuxguist/emulatorjs@main/data/";
+            // THE FIX: rawcdn.githack.com serves files with correct JS headers
+            // This pulls from the EmulatorJS main repo but fixes the 'text/plain' error
+            window.EJS_pathtodata = "https://rawcdn.githack.com/EmulatorJS/EmulatorJS/main/data/";
 
             const loader = document.createElement('script');
-            loader.src = "https://cdn.jsdelivr.net/gh/linuxguist/emulatorjs@main/data/loader.js";
+            loader.src = "https://rawcdn.githack.com/EmulatorJS/EmulatorJS/main/data/loader.js";
             loader.setAttribute('crossorigin', 'anonymous');
             
             loader.onload = () => {
                 setTimeout(() => {
                     document.getElementById('ui').style.display = 'none';
                 }, 2000);
+            };
+
+            loader.onerror = () => {
+                document.getElementById('ui').innerHTML = "<h2 style='color:red'>LOAD FAILED</h2><p>Check Network Tab for status.</p>";
             };
 
             document.body.appendChild(loader);
