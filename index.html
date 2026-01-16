@@ -2,19 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC High-Performance Final</title>
+    <title>GC - Stable Build</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
     <script>
-        // THE ULTIMATE FIX: Create a robust fake gamepad object with an '.on' function
-        window.GamepadHandler = function() {
-            return {
-                getGamepads: function() { return []; },
-                on: function() { return; }, // Prevents "this.gamepad.on is not a function"
-                off: function() { return; }
-            };
-        };
-        // Global safety for the specific emulator.js variable
-        window.gamepad = { on: function() {}, off: function() {} };
+        // PRE-INIT: Fixes the 'not a constructor' and 'gamepad' errors simultaneously
+        window.EJS_STORAGE = function() { return { get: function(){}, set: function(){} }; };
+        window.GamepadHandler = function() { return { getGamepads: function() { return []; }, on: function(){}, off: function(){} }; };
+        window.gamepad = { on: function(){}, off: function(){} };
     </script>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; }
@@ -24,9 +18,8 @@
 </head>
 <body>
     <div id="loading" onclick="document.getElementById('iso').click()">
-        <h2>SYSTEM OVERRIDE ACTIVE</h2>
+        <h2>SYSTEM STORAGE PATCHED</h2>
         <p>Click to select 657MB ISO</p>
-        <p style="color:#444; font-size: 10px;">Input Patched | GPU Ready</p>
         <input type="file" id="iso" style="display:none">
     </div>
     <div id="game"></div>
@@ -36,14 +29,18 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('loading').innerHTML = "<h2>BOOTING...</h2><p>Drawing Shaders to GTX 1050 Ti...</p>";
+            document.getElementById('loading').innerHTML = "<h2>ALLOCATING RAM...</h2><p>Wait 30s for the GTX 1050 Ti to map shaders.</p>";
             document.getElementById('game').style.display = 'block';
 
             window.EJS_player = '#game';
             window.EJS_core = 'gc'; 
             window.EJS_gameUrl = URL.createObjectURL(file);
+            
+            // THE CRITICAL FIXES:
             window.EJS_language = 'en-US';
             window.EJS_disableAutoLang = true; 
+            window.EJS_disableLocalStorage = true; // Stops the 'EJS_STORAGE' crash
+            
             window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/";
             window.EJS_startOnLoaded = true;
 
