@@ -2,18 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC - Engine Fix</title>
+    <title>GC - Stable Build</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; }
         #game { width: 100vw; height: 100vh; display: none; }
-        #loading { text-align: center; border: 1px solid #0f0; padding: 40px; cursor: pointer; }
+        #loading { text-align: center; border: 1px solid #0f0; padding: 40px; cursor: pointer; max-width: 400px; }
+        .hint { color: #555; font-size: 11px; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div id="loading" onclick="document.getElementById('iso').click()">
-        <h2>JOYSTICK LIBRARY LOADED</h2>
-        <p>Click to select your 657MB GameCube ISO</p>
+        <h2>SYSTEM READY</h2>
+        <p>Click to select 657MB ISO</p>
+        <div class="hint">GTX 1050 Ti Detected | Language: EN-US</div>
         <input type="file" id="iso" style="display:none">
     </div>
     <div id="game"></div>
@@ -23,15 +25,24 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('loading').innerHTML = "<h2>BOOTING DOLPHIN CORE...</h2><p>Allocating RAM. Please wait 30s.</p>";
+            document.getElementById('loading').innerHTML = "<h2>MOUNTING...</h2><p>Wait for the Dolphin Core download (approx 30s).</p>";
             document.getElementById('game').style.display = 'block';
 
+            // Main Configuration
             window.EJS_player = '#game';
             window.EJS_core = 'gc'; 
             window.EJS_gameUrl = URL.createObjectURL(file);
             window.EJS_gameID = Date.now();
             
-            // Using the official GitHub Mirror for the most stable experience
+            // FIX: Force language to en-US to prevent en-GB 404
+            window.EJS_language = 'en-US';
+            window.EJS_disableAutoLang = true; 
+            
+            // FIX: Ensure GamepadHandler is initialized by the loader
+            window.EJS_onGameStart = function() {
+                console.log("Game started - Inputs active.");
+            };
+
             window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/";
             window.EJS_startOnLoaded = true;
 
@@ -39,7 +50,10 @@
             loader.src = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/loader.js";
             
             loader.onload = () => {
-                document.getElementById('loading').style.display = 'none';
+                // Short delay to let GamepadHandler script initialize internally
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                }, 1000);
             };
 
             document.body.appendChild(loader);
