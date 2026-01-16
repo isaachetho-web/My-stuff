@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC - Stable Build</title>
+    <title>GC - Stable Mirror</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
     <script>
-        // PRE-INIT: Fixes the 'not a constructor' and 'gamepad' errors simultaneously
+        // MOCK OBJECTS: Prevents common 'undefined' crashes
         window.EJS_STORAGE = function() { return { get: function(){}, set: function(){} }; };
         window.GamepadHandler = function() { return { getGamepads: function() { return []; }, on: function(){}, off: function(){} }; };
-        window.gamepad = { on: function(){}, off: function(){} };
     </script>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; }
@@ -18,8 +17,9 @@
 </head>
 <body>
     <div id="loading" onclick="document.getElementById('iso').click()">
-        <h2>SYSTEM STORAGE PATCHED</h2>
+        <h2>MIRROR BYPASS ENGAGED</h2>
         <p>Click to select 657MB ISO</p>
+        <div style="color: #444; font-size: 10px; margin-top:10px;">Fixes: TypeError 'then' (line 670)</div>
         <input type="file" id="iso" style="display:none">
     </div>
     <div id="game"></div>
@@ -29,28 +29,32 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('loading').innerHTML = "<h2>ALLOCATING RAM...</h2><p>Wait 30s for the GTX 1050 Ti to map shaders.</p>";
+            document.getElementById('loading').innerHTML = "<h2>DOWNLOADING ENGINE...</h2><p>Using CORS-Bypass Mirror. This may take 60s.</p>";
             document.getElementById('game').style.display = 'block';
 
             window.EJS_player = '#game';
             window.EJS_core = 'gc'; 
             window.EJS_gameUrl = URL.createObjectURL(file);
-            
-            // THE CRITICAL FIXES:
             window.EJS_language = 'en-US';
             window.EJS_disableAutoLang = true; 
-            window.EJS_disableLocalStorage = true; // Stops the 'EJS_STORAGE' crash
-            
-            window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/";
             window.EJS_startOnLoaded = true;
 
+            // SWITCHING TO THE STABLE ARCHIVE MIRROR
+            // This avoids the GitHub Pages fetch blocks that cause the '.then()' error
+            window.EJS_pathtodata = "https://raw.githack.com/EmulatorJS/EmulatorJS/main/data/";
+
             const loader = document.createElement('script');
-            loader.src = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@latest/data/loader.js";
+            loader.src = "https://raw.githack.com/EmulatorJS/EmulatorJS/main/data/loader.js";
             
             loader.onload = () => {
                 setTimeout(() => {
                     document.getElementById('loading').style.display = 'none';
-                }, 2000);
+                }, 3000);
+            };
+
+            // If the bypass fails, show a clean error instead of a crash
+            loader.onerror = () => {
+                document.getElementById('loading').innerHTML = "<h2 style='color:red'>FETCH DENIED</h2><p>Try opening in Incognito Mode.</p>";
             };
 
             document.body.appendChild(loader);
