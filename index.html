@@ -2,49 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC - Stealth Loader</title>
+    <title>GC - Direct Engine</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; font-family: sans-serif; }
-        #box { border: 1px solid #444; padding: 50px; text-align: center; }
-        #game { width: 100vw; height: 100vh; display: none; }
-        .btn { background: #333; color: #fff; border: 1px solid #fff; padding: 15px; cursor: pointer; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; flex-direction: column; font-family: sans-serif; }
+        #status { border: 2px solid #555; padding: 40px; text-align: center; }
+        #canvas { width: 100vw; height: 100vh; display: none; }
+        .btn { background: #fff; color: #000; border: none; padding: 15px 30px; cursor: pointer; font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div id="box">
-        <h2>GAMECUBE LOADER (STEALTH)</h2>
-        <p id="msg">Mirror A: Blocked. Mirror B: Attempting...</p>
-        <button class="btn" onclick="document.getElementById('iso').click()">SELECT ISO</button>
+    <div id="status">
+        <h2>GAME SYSTEM INITIALIZED</h2>
+        <p id="msg">Awaiting ISO File...</p>
+        <button class="btn" onclick="document.getElementById('iso').click()">BROWSE ISO</button>
         <input type="file" id="iso" style="display:none">
     </div>
-    <div id="game"></div>
+    <canvas id="canvas"></canvas>
 
     <script>
         document.getElementById('iso').onchange = function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('box').style.display = 'none';
-            document.getElementById('game').style.display = 'block';
+            document.getElementById('status').innerHTML = "<h2>RUNNING ENGINE</h2><p>Please wait 30-60 seconds for graphics initialization.</p>";
 
-            window.EJS_player = '#game';
-            window.EJS_core = 'gc'; 
+            // DIRECT HANDSHAKE - Bypassing the faulty loader script
+            window.EJS_player = '#canvas';
+            window.EJS_core = 'dolphin'; 
             window.EJS_gameUrl = URL.createObjectURL(file);
+            window.EJS_gameID = Math.random(); 
             
-            // We are using the "4.0.0" specific version archive. 
-            // This is hosted on a different part of the CDN that is rarely blocked.
-            window.EJS_pathtodata = "https://cdn.emulatorjs.org/4.0.0/data/";
+            // Using the raw archive data path
+            window.EJS_pathtodata = "https://webretro.github.io/ac/";
             window.EJS_startOnLoaded = true;
 
-            const loader = document.createElement('script');
-            // Adding a timestamp to the URL to prevent "Cached" 404/Block errors
-            loader.src = "https://cdn.emulatorjs.org/4.0.0/data/loader.js?v=" + Date.now();
+            const script = document.createElement('script');
+            // We load the raw loader from a mirror that doesn't have the adblock-trap
+            script.src = "https://webretro.github.io/ac/loader.js";
             
-            loader.onerror = () => {
-                alert("CDN BLOCKED AGAIN. Please try this: Disable Ad-Block or open in Incognito (Ctrl+Shift+N).");
+            script.onload = () => {
+                document.getElementById('status').style.display = 'none';
+                document.getElementById('canvas').style.display = 'block';
             };
-
-            document.body.appendChild(loader);
+            
+            document.body.appendChild(script);
         };
     </script>
 </body>
