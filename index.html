@@ -2,60 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC - Connection Fix</title>
+    <title>GameCube High Performance</title>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-        #status { font-size: 20px; text-align: center; }
-        #sub { color: #555; margin-top: 10px; }
-        .btn { border: 1px solid #0f0; padding: 15px; cursor: pointer; margin-top: 20px; }
+        #status-box { border: 2px solid #0f0; padding: 40px; text-align: center; }
+        #game { width: 100vw; height: 100vh; display: none; }
+        .btn { background: #111; border: 1px solid #0f0; color: #0f0; padding: 15px 30px; cursor: pointer; font-size: 18px; margin-top: 20px; }
+        .btn:hover { background: #0f0; color: #000; }
     </style>
 </head>
 <body>
-    <div id="status">CORE CONNECTION TEST</div>
-    <div id="sub">Awaiting User Interaction...</div>
-    <div class="btn" id="startBtn">SELECT 657MB ISO</div>
-    <input type="file" id="iso" style="display:none">
-    <div id="game" style="width:100%; height:100%; display:none;"></div>
+    <div id="status-box">
+        <h1>SYSTEM: GAMECUBE</h1>
+        <p>Status: Ready</p>
+        <button class="btn" onclick="document.getElementById('iso').click()">SELECT ISO</button>
+        <input type="file" id="iso" style="display:none">
+    </div>
+    
+    <div id="game"></div>
 
     <script>
-        const startBtn = document.getElementById('startBtn');
-        const status = document.getElementById('status');
-        const sub = document.getElementById('sub');
-
-        startBtn.onclick = () => document.getElementById('iso').click();
-
         document.getElementById('iso').onchange = function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            startBtn.style.display = 'none';
-            status.innerText = "ATTEMPTING CONNECTION...";
-            sub.innerText = "Connecting to Mirror A (GitHub Content)...";
+            document.getElementById('status-box').innerHTML = "<h1>LOADING...</h1><p>Initializing Dolphin Core</p>";
 
             window.EJS_player = '#game';
             window.EJS_core = 'gc'; 
             window.EJS_gameUrl = URL.createObjectURL(file);
             window.EJS_gameID = Date.now();
             
-            // Switching to the RAW GitHub CDN which often bypasses standard CDN blocks
-            window.EJS_pathtodata = "https://emulatorjs.github.io/v4/data/";
+            // Using a more reliable "Nightly" mirror which often works when stable fails
+            window.EJS_pathtodata = "https://cdn.emulatorjs.org/nightly/data/";
             window.EJS_startOnLoaded = true;
 
             const loader = document.createElement('script');
-            loader.src = "https://emulatorjs.github.io/v4/data/loader.js";
+            // Using the nightly loader which has better GitHub Pages compatibility
+            loader.src = "https://cdn.emulatorjs.org/nightly/data/loader.js";
             
             loader.onload = () => {
-                status.innerText = "CONNECTION SUCCESSFUL";
-                sub.innerText = "Downloading GameCube Engine (30MB)...";
+                document.getElementById('status-box').style.display = 'none';
                 document.getElementById('game').style.display = 'block';
             };
 
-            loader.onerror = (err) => {
-                status.innerText = "CONNECTION REFUSED";
-                sub.innerText = "Mirror A Blocked. Error logged to Console (F12).";
-                console.error("CDN Load Error:", err);
+            loader.onerror = () => {
+                document.getElementById('status-box').innerHTML = "<h1>ERROR</h1><p>CDN still blocked. Try opening in Incognito mode.</p>";
             };
-
+            
             document.body.appendChild(loader);
         };
     </script>
