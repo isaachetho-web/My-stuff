@@ -2,59 +2,59 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC - Stable Mirror</title>
+    <title>GC System - Final Build</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
     <script>
-        // MOCK OBJECTS: Prevents common 'undefined' crashes
+        // PRE-INIT: Fixing the specific errors found in your console log
         window.EJS_STORAGE = function() { return { get: function(){}, set: function(){} }; };
         window.GamepadHandler = function() { return { getGamepads: function() { return []; }, on: function(){}, off: function(){} }; };
     </script>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; }
-        #game { width: 100vw; height: 100vh; display: none; }
-        #loading { text-align: center; border: 1px solid #0f0; padding: 40px; cursor: pointer; }
+        #game-container { width: 100vw; height: 100vh; display: none; }
+        #setup-ui { text-align: center; border: 2px solid #0f0; padding: 50px; cursor: pointer; background: #050505; }
+        .log-msg { color: #555; font-size: 11px; margin-top: 15px; }
     </style>
 </head>
 <body>
-    <div id="loading" onclick="document.getElementById('iso').click()">
-        <h2>MIRROR BYPASS ENGAGED</h2>
-        <p>Click to select 657MB ISO</p>
-        <div style="color: #444; font-size: 10px; margin-top:10px;">Fixes: TypeError 'then' (line 670)</div>
-        <input type="file" id="iso" style="display:none">
+    <div id="setup-ui" onclick="document.getElementById('iso-upload').click()">
+        <h2 style="letter-spacing: 3px;">BOOTLOADER ACTIVE</h2>
+        <p>SELECT ISO FILE (657MB)</p>
+        <p class="log-msg">Fixing: Core 404 & gameId Warnings</p>
+        <input type="file" id="iso-upload" style="display:none">
     </div>
-    <div id="game"></div>
+    <div id="game-container"></div>
 
     <script>
-        document.getElementById('iso').onchange = function(e) {
+        document.getElementById('iso-upload').onchange = function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('loading').innerHTML = "<h2>DOWNLOADING ENGINE...</h2><p>Using CORS-Bypass Mirror. This may take 60s.</p>";
-            document.getElementById('game').style.display = 'block';
+            document.getElementById('setup-ui').innerHTML = "<h2>LOADING ENGINE...</h2><p>Fetching GC-Legacy-Wasm from Stable CDN</p>";
+            document.getElementById('game-container').style.display = 'block';
 
-            window.EJS_player = '#game';
+            window.EJS_player = '#game-container';
             window.EJS_core = 'gc'; 
             window.EJS_gameUrl = URL.createObjectURL(file);
+            
+            // FIX: This removes the "gameId not set" warnings from your log
+            window.EJS_gameID = 1001; 
+            
             window.EJS_language = 'en-US';
             window.EJS_disableAutoLang = true; 
+            
+            // SWITCHING TO THE STABLE PRODUCTION DATA PATH
+            window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
             window.EJS_startOnLoaded = true;
 
-            // SWITCHING TO THE STABLE ARCHIVE MIRROR
-            // This avoids the GitHub Pages fetch blocks that cause the '.then()' error
-            window.EJS_pathtodata = "https://raw.githack.com/EmulatorJS/EmulatorJS/main/data/";
-
             const loader = document.createElement('script');
-            loader.src = "https://raw.githack.com/EmulatorJS/EmulatorJS/main/data/loader.js";
+            // Using the official stable loader
+            loader.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
             
             loader.onload = () => {
                 setTimeout(() => {
-                    document.getElementById('loading').style.display = 'none';
-                }, 3000);
-            };
-
-            // If the bypass fails, show a clean error instead of a crash
-            loader.onerror = () => {
-                document.getElementById('loading').innerHTML = "<h2 style='color:red'>FETCH DENIED</h2><p>Try opening in Incognito Mode.</p>";
+                    document.getElementById('setup-ui').style.display = 'none';
+                }, 2000);
             };
 
             document.body.appendChild(loader);
