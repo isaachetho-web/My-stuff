@@ -2,24 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GC System - ORB Bypass</title>
+    <title>GC System - Dolphin Core</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js" crossorigin="anonymous"></script>
     <script>
         window.EJS_STORAGE = function() { return { get: function(){}, set: function(){} }; };
         window.GamepadHandler = function() { return { getGamepads: function() { return []; }, on: function(){}, off: function(){} }; };
     </script>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; }
         #game-container { width: 100vw; height: 100vh; display: none; }
-        #setup-ui { text-align: center; border: 2px solid #0f0; padding: 50px; cursor: pointer; background: #050505; z-index: 10; }
+        #setup-ui { text-align: center; border: 2px solid #0f0; padding: 50px; cursor: pointer; background: #050505; }
     </style>
 </head>
 <body>
     <div id="setup-ui" onclick="document.getElementById('iso-upload').click()">
-        <h2>ORB SECURITY BYPASS</h2>
+        <h2>CORE UPDATE: DOLPHIN</h2>
         <p>SELECT ISO (657MB)</p>
-        <p style="color: #444; font-size: 10px;">Status: Forcing Anonymous Cross-Origin</p>
+        <p style="color: #444; font-size: 10px;">Swapping 'gc' for 'dolphin' engine</p>
         <input type="file" id="iso-upload" style="display:none">
     </div>
     <div id="game-container"></div>
@@ -29,33 +28,31 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('setup-ui').innerHTML = "<h2>HANDSHAKING...</h2><p>Bypassing Browser Security Headers</p>";
+            document.getElementById('setup-ui').innerHTML = "<h2>LOADING ENGINE...</h2><p>Fetching Dolphin WASM Core</p>";
             document.getElementById('game-container').style.display = 'block';
 
             window.EJS_player = '#game-container';
-            window.EJS_core = 'gc'; 
+            
+            // THE CRITICAL CHANGE: Changing 'gc' to 'dolphin'
+            // This forces the loader to look for the modern file name
+            window.EJS_core = 'dolphin'; 
+            
             window.EJS_gameUrl = URL.createObjectURL(file);
             window.EJS_gameID = Date.now();
             window.EJS_language = 'en-US';
             window.EJS_startOnLoaded = true;
 
-            // Using a mirror that specifically ignores ORB restrictions
-            window.EJS_pathtodata = "https://emulatorjs.github.io/EmulatorJS/data/";
+            // Using the official Nightly path which contains the newer Dolphin files
+            window.EJS_pathtodata = "https://cdn.emulatorjs.org/nightly/data/";
 
             const loader = document.createElement('script');
-            loader.src = "https://emulatorjs.github.io/EmulatorJS/data/loader.js";
-            
-            // THE FIX: Forcing the browser to allow the cross-site script
+            loader.src = "https://cdn.emulatorjs.org/nightly/data/loader.js";
             loader.setAttribute('crossorigin', 'anonymous');
             
             loader.onload = () => {
                 setTimeout(() => {
                     document.getElementById('setup-ui').style.display = 'none';
                 }, 2000);
-            };
-
-            loader.onerror = () => {
-                document.getElementById('setup-ui').innerHTML = "<h2 style='color:red'>ORB BLOCK PERSISTS</h2><p>Try this: Right-click your Chrome shortcut > Properties > Target > add ' --disable-web-security' at the end.</p>";
             };
 
             document.body.appendChild(loader);
