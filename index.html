@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC System - Archive Redirect</title>
+    <title>GC - Unpkg Stable</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js" crossorigin="anonymous"></script>
     <script>
+        // Prevent engine crashes
         window.EJS_STORAGE = function() { return { get: function(){}, set: function(){} }; };
         window.GamepadHandler = function() { return { getGamepads: function() { return []; }, on: function(){}, off: function(){} }; };
     </script>
@@ -16,9 +17,9 @@
 </head>
 <body>
     <div id="ui" onclick="document.getElementById('iso').click()">
-        <h2>ENGINE LOADED</h2>
+        <h2>UNPKG STABLE BOOT</h2>
         <p>SELECT ISO (657MB)</p>
-        <p style="color: #444; font-size: 10px;">Forcing Core Download from Stable Archive</p>
+        <p style="color: #444; font-size: 10px;">Status: Using Unpkg production mirror</p>
         <input type="file" id="iso" style="display:none">
     </div>
     <div id="game"></div>
@@ -28,7 +29,7 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('ui').innerHTML = "<h2>SEARCHING CORES...</h2><p>Attempting to bypass 404 via Mirror</p>";
+            document.getElementById('ui').innerHTML = "<h2>INITIATING...</h2><p>Handshaking with Unpkg CDN</p>";
             document.getElementById('game').style.display = 'block';
 
             window.EJS_player = '#game';
@@ -37,13 +38,12 @@
             window.EJS_gameID = Date.now();
             window.EJS_startOnLoaded = true;
 
-            // We are using a mirrored data path that contains the older core files
-            // specifically for Dolphin/GameCube.
-            window.EJS_pathtodata = "https://rawcdn.githack.com/linuxguist/emulatorjs/main/data/";
+            // Unpkg handles the MIME types (application/javascript) automatically
+            // and the 'emulatorjs' package contains all necessary data folders.
+            window.EJS_pathtodata = "https://unpkg.com/emulatorjs@latest/data/";
 
             const loader = document.createElement('script');
-            // We load the engine from the stable Githack mirror
-            loader.src = "https://rawcdn.githack.com/linuxguist/emulatorjs/main/data/loader.js";
+            loader.src = "https://unpkg.com/emulatorjs@latest/data/loader.js";
             loader.setAttribute('crossorigin', 'anonymous');
             
             loader.onload = () => {
