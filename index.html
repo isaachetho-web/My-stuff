@@ -2,48 +2,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC - Final Portal</title>
+    <title>GC - Final System</title>
+    <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.10.1/dist/nipplejs.min.js" crossorigin="anonymous"></script>
+    <script>
+        // Fixing 'not defined' crashes before the engine even starts
+        window.EJS_STORAGE = function() { return { get: function(){}, set: function(){} }; };
+        window.GamepadHandler = function() { return { getGamepads: function() { return []; }, on: function(){}, off: function(){} }; };
+    </script>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; overflow: hidden; font-family: sans-serif; }
-        #setup { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: #0f0; text-align: center; }
-        #emulator-frame { width: 100vw; height: 100vh; border: none; display: none; }
-        .btn { background: #111; color: #0f0; border: 1px solid #0f0; padding: 20px; cursor: pointer; font-weight: bold; }
-        .btn:hover { background: #0f0; color: #000; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        #game { width: 100vw; height: 100vh; display: none; }
+        #ui { text-align: center; border: 2px solid #0f0; padding: 50px; cursor: pointer; background: #050505; }
     </style>
 </head>
 <body>
-
-    <div id="setup">
-        <h2>EMBEDDED ENGINE ACTIVE</h2>
-        <p>Bypassing CORS & ORB Security</p>
-        <button class="btn" onclick="document.getElementById('iso').click()">SELECT ISO (657MB)</button>
+    <div id="ui" onclick="document.getElementById('iso').click()">
+        <h2>SYSTEM: SECURITY OVERRIDE</h2>
+        <p>CLICK TO SELECT 657MB ISO</p>
+        <p style="color: #444; font-size: 10px;">Bypassing ERR_BLOCKED_BY_ORB</p>
         <input type="file" id="iso" style="display:none">
     </div>
-
-    <div id="game-container" style="display:none; width:100%; height:100%;">
-        <div id="game"></div>
-    </div>
+    <div id="game"></div>
 
     <script>
         document.getElementById('iso').onchange = function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            // Hide UI
-            document.getElementById('setup').style.display = 'none';
-            document.getElementById('game-container').style.display = 'block';
+            document.getElementById('ui').innerHTML = "<h2>MOUNTING...</h2><p>Pulling Dolphin Core via jsDelivr Proxy</p>";
+            document.getElementById('game').style.display = 'block';
 
-            // Configure Emulator
             window.EJS_player = '#game';
-            window.EJS_core = 'dolphin';
+            window.EJS_core = 'gc'; 
             window.EJS_gameUrl = URL.createObjectURL(file);
-            window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/linuxguist/emulatorjs@main/data/";
+            window.EJS_gameID = Date.now();
+            window.EJS_language = 'en-US';
             window.EJS_startOnLoaded = true;
 
-            // Load the script from a jsDelivr mirror (which is CORS-friendly)
-            var script = document.createElement('script');
-            script.src = "https://cdn.jsdelivr.net/gh/linuxguist/emulatorjs@main/data/loader.js";
-            document.body.appendChild(script);
+            // This specific path format is designed to pass ORB security checks
+            window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@main/data/";
+
+            const loader = document.createElement('script');
+            // We use the 'combine' feature of jsDelivr which masks the file type to bypass ORB
+            loader.src = "https://cdn.jsdelivr.net/combine/gh/EmulatorJS/EmulatorJS@main/data/loader.js";
+            loader.setAttribute('crossorigin', 'anonymous');
+            
+            loader.onload = () => {
+                setTimeout(() => {
+                    document.getElementById('ui').style.display = 'none';
+                }, 2000);
+            };
+
+            document.body.appendChild(loader);
         };
     </script>
 </body>
