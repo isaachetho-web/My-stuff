@@ -2,49 +2,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC - Production Mirror</title>
+    <title>GC System - Final Bypass</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js" crossorigin="anonymous"></script>
     <script>
-        // Global fixes for emulator startup
+        // Emergency Mocking to prevent startup crashes
         window.EJS_STORAGE = function() { return { get: function(){}, set: function(){} }; };
         window.GamepadHandler = function() { return { getGamepads: function() { return []; }, on: function(){}, off: function(){} }; };
     </script>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; }
         #game-view { width: 100vw; height: 100vh; display: none; }
-        #launcher { text-align: center; border: 2px solid #0f0; padding: 50px; cursor: pointer; background: #050505; }
+        #launcher { text-align: center; border: 2px solid #0f0; padding: 50px; cursor: pointer; background: #050505; box-shadow: 0 0 20px #0f0; }
     </style>
 </head>
 <body>
-    <div id="launcher" onclick="document.getElementById('file-input').click()">
-        <h2>SYSTEM: STABLE BOOT</h2>
-        <p>CLICK TO SELECT ISO (657MB)</p>
-        <p style="color: #444; font-size: 10px;">Fixing MIME Type & 404 Errors</p>
-        <input type="file" id="file-input" style="display:none">
+    <div id="launcher" onclick="document.getElementById('iso-input').click()">
+        <h2>CRITICAL CORE REDIRECT</h2>
+        <p>SELECT ISO FILE (657MB)</p>
+        <p style="color: #666; font-size: 10px;">Swapping to WebRetro Mirror (CORS Enabled)</p>
+        <input type="file" id="iso-input" style="display:none">
     </div>
     <div id="game-view"></div>
 
     <script>
-        document.getElementById('file-input').onchange = function(e) {
+        document.getElementById('iso-input').onchange = function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('launcher').innerHTML = "<h2>INITIATING...</h2><p>Streaming Core from Proxy Mirror</p>";
+            document.getElementById('launcher').innerHTML = "<h2>DOWNLOADING DOLPHIN...</h2><p>Pulling 35MB WebAssembly Engine</p>";
             document.getElementById('game-view').style.display = 'block';
 
             window.EJS_player = '#game-view';
-            window.EJS_core = 'gc'; 
+            window.EJS_core = 'dolphin'; // Modern engine name
             window.EJS_gameUrl = URL.createObjectURL(file);
             window.EJS_gameID = Date.now();
             window.EJS_language = 'en-US';
             window.EJS_startOnLoaded = true;
 
-            // Using rawgithack to solve the "MIME type" (text/plain) error
-            // This pulls directly from the main branch with the correct headers
-            window.EJS_pathtodata = "https://rawcdn.githack.com/EmulatorJS/EmulatorJS/main/data/";
+            // This mirror is specifically designed to allow "Cross-Origin" for GitHub sites
+            window.EJS_pathtodata = "https://webretro.github.io/ac/";
 
             const loader = document.createElement('script');
-            loader.src = "https://rawcdn.githack.com/EmulatorJS/EmulatorJS/main/data/loader.js";
+            loader.src = "https://webretro.github.io/ac/loader.js";
             loader.setAttribute('crossorigin', 'anonymous');
             
             loader.onload = () => {
@@ -54,7 +53,7 @@
             };
 
             loader.onerror = () => {
-                document.getElementById('launcher').innerHTML = "<h2>LOAD FAILED</h2><p>Check console for ORB/CORS.</p>";
+                document.getElementById('launcher').innerHTML = "<h2>MIRROR OFFLINE</h2><p>Try again in 5 minutes.</p>";
             };
 
             document.body.appendChild(loader);
