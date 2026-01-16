@@ -2,61 +2,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC System - Final Bypass</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js" crossorigin="anonymous"></script>
-    <script>
-        // Emergency Mocking to prevent startup crashes
-        window.EJS_STORAGE = function() { return { get: function(){}, set: function(){} }; };
-        window.GamepadHandler = function() { return { getGamepads: function() { return []; }, on: function(){}, off: function(){} }; };
-    </script>
+    <title>GC - Final Portal</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; }
-        #game-view { width: 100vw; height: 100vh; display: none; }
-        #launcher { text-align: center; border: 2px solid #0f0; padding: 50px; cursor: pointer; background: #050505; box-shadow: 0 0 20px #0f0; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; overflow: hidden; font-family: sans-serif; }
+        #setup { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: #0f0; text-align: center; }
+        #emulator-frame { width: 100vw; height: 100vh; border: none; display: none; }
+        .btn { background: #111; color: #0f0; border: 1px solid #0f0; padding: 20px; cursor: pointer; font-weight: bold; }
+        .btn:hover { background: #0f0; color: #000; }
     </style>
 </head>
 <body>
-    <div id="launcher" onclick="document.getElementById('iso-input').click()">
-        <h2>CRITICAL CORE REDIRECT</h2>
-        <p>SELECT ISO FILE (657MB)</p>
-        <p style="color: #666; font-size: 10px;">Swapping to WebRetro Mirror (CORS Enabled)</p>
-        <input type="file" id="iso-input" style="display:none">
+
+    <div id="setup">
+        <h2>EMBEDDED ENGINE ACTIVE</h2>
+        <p>Bypassing CORS & ORB Security</p>
+        <button class="btn" onclick="document.getElementById('iso').click()">SELECT ISO (657MB)</button>
+        <input type="file" id="iso" style="display:none">
     </div>
-    <div id="game-view"></div>
+
+    <div id="game-container" style="display:none; width:100%; height:100%;">
+        <div id="game"></div>
+    </div>
 
     <script>
-        document.getElementById('iso-input').onchange = function(e) {
+        document.getElementById('iso').onchange = function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('launcher').innerHTML = "<h2>DOWNLOADING DOLPHIN...</h2><p>Pulling 35MB WebAssembly Engine</p>";
-            document.getElementById('game-view').style.display = 'block';
+            // Hide UI
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
 
-            window.EJS_player = '#game-view';
-            window.EJS_core = 'dolphin'; // Modern engine name
+            // Configure Emulator
+            window.EJS_player = '#game';
+            window.EJS_core = 'dolphin';
             window.EJS_gameUrl = URL.createObjectURL(file);
-            window.EJS_gameID = Date.now();
-            window.EJS_language = 'en-US';
+            window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/linuxguist/emulatorjs@main/data/";
             window.EJS_startOnLoaded = true;
 
-            // This mirror is specifically designed to allow "Cross-Origin" for GitHub sites
-            window.EJS_pathtodata = "https://webretro.github.io/ac/";
-
-            const loader = document.createElement('script');
-            loader.src = "https://webretro.github.io/ac/loader.js";
-            loader.setAttribute('crossorigin', 'anonymous');
-            
-            loader.onload = () => {
-                setTimeout(() => {
-                    document.getElementById('launcher').style.display = 'none';
-                }, 2000);
-            };
-
-            loader.onerror = () => {
-                document.getElementById('launcher').innerHTML = "<h2>MIRROR OFFLINE</h2><p>Try again in 5 minutes.</p>";
-            };
-
-            document.body.appendChild(loader);
+            // Load the script from a jsDelivr mirror (which is CORS-friendly)
+            var script = document.createElement('script');
+            script.src = "https://cdn.jsdelivr.net/gh/linuxguist/emulatorjs@main/data/loader.js";
+            document.body.appendChild(script);
         };
     </script>
 </body>
