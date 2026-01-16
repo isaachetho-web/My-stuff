@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC - Stable Core 2026</title>
-    <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.10.1/dist/nipplejs.min.js" crossorigin="anonymous"></script>
+    <title>GC System - CDN Stable</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js" crossorigin="anonymous"></script>
     <script>
-        // Fixing common emulator crashes
+        // Fixing 'undefined' errors before they start
         window.EJS_STORAGE = function() { return { get: function(){}, set: function(){} }; };
         window.GamepadHandler = function() { return { getGamepads: function() { return []; }, on: function(){}, off: function(){} }; };
     </script>
@@ -16,20 +16,20 @@
     </style>
 </head>
 <body>
-    <div id="launcher" onclick="document.getElementById('file-input').click()">
-        <h2>STABLE CORE HANDSHAKE</h2>
+    <div id="launcher" onclick="document.getElementById('iso').click()">
+        <h2>CDN PRODUCTION BOOT</h2>
         <p>SELECT ISO FILE (657MB)</p>
-        <p style="color: #444; font-size: 10px;">Forcing Fallback to Stable v4.2 Core</p>
-        <input type="file" id="file-input" style="display:none">
+        <p style="color: #444; font-size: 10px;">Bypassing GitHub 404s via Official CDN</p>
+        <input type="file" id="iso" style="display:none">
     </div>
     <div id="game"></div>
 
     <script>
-        document.getElementById('file-input').onchange = function(e) {
+        document.getElementById('iso').onchange = function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            document.getElementById('launcher').innerHTML = "<h2>MOUNTING ENGINE...</h2><p>Connecting to Libretro Mirror</p>";
+            document.getElementById('launcher').innerHTML = "<h2>DOWNLOADING...</h2><p>Connecting to Official Core Server</p>";
             document.getElementById('game').style.display = 'block';
 
             window.EJS_player = '#game';
@@ -38,12 +38,12 @@
             window.EJS_gameID = Date.now();
             window.EJS_startOnLoaded = true;
 
-            // Using the 'v4.0.0' tag specifically because it contains the legacy cores 
-            // that aren't in the 'main' or 'nightly' branches anymore.
-            window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@v4.0.0/data/";
+            // Using the official stable CDN path
+            // This server is pre-configured for CORS and correct MIME types
+            window.EJS_pathtodata = "https://cdn.emulatorjs.org/latest/data/";
 
             const loader = document.createElement('script');
-            loader.src = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@v4.0.0/data/loader.js";
+            loader.src = "https://cdn.emulatorjs.org/latest/data/loader.js";
             loader.setAttribute('crossorigin', 'anonymous');
             
             loader.onload = () => {
